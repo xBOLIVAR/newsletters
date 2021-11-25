@@ -1,7 +1,7 @@
 from django.db import models
-from django.db.models.fields import DateField
 from tags.models import Tag 
 from usuarios.models import Usuario
+
 
 class Newsletter(models.Model):
     nombre = models.CharField(max_length=100)
@@ -11,6 +11,5 @@ class Newsletter(models.Model):
     frecuencia = models.CharField(max_length = 100, default="")
     fecha = models.DateField(auto_now_add=True)
     tags = models.ManyToManyField(Tag, related_name='newsletters')
-
     def __str__(self):
         return self.nombre

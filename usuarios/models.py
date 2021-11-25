@@ -1,13 +1,10 @@
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
-
-
+from django.contrib.auth.models import AbstractUser
 
 class Usuario(models.Model):
     nombre = models.CharField(max_length=100)
     apellidos = models.CharField(max_length=100)
     correo = models.CharField(max_length=100, default='')
-    password = models.CharField(_('password'), max_length=100 )
-
+    password = models.CharField(max_length=100, default='')
     def __str__(self):
         return self.nombre

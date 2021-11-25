@@ -1,4 +1,5 @@
 from rest_framework.permissions import AllowAny, IsAdminUser
+from newsletters.models import Newsletter
 from usuarios.serializers import UsuarioSerializer
 from rest_framework.viewsets import ModelViewSet
 from usuarios.models import Usuario
@@ -19,3 +20,5 @@ class UsuarioViewSet(ModelViewSet):
             return self.queryset.filter(**data)
         except Exception as e:
             return self.queryset
+
+        
