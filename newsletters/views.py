@@ -3,6 +3,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 from newsletters.serializers import NewsletterSerializer, NewsletterNoAdminSerializer
 from rest_framework.viewsets import ModelViewSet
 from newsletters.models import Newsletter
+from django.contrib.auth.models import User
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.core.mail import send_mail
@@ -15,10 +16,9 @@ from usuarios.serializers import UserSerializer
 class NewsletterViewSet(ModelViewSet):  
     queryset = Newsletter.objects.all()
     serializer_class = NewsletterSerializer
-    permission_classes = (AllowAny,)    #(IsAdminUser,) 
+    # permission_classes = (AllowAny,)    #(IsAdminUser,) 
 
     def get_serializer_class(self):
-        print(self.request.user.is_staff)
         # si es admin, get post, accion de invitar a otros admin a editar
         if  self.request.user.is_staff:
 
@@ -34,7 +34,6 @@ class NewsletterViewSet(ModelViewSet):
         try:
             data = {}
             for i in self.request.query_params:
-                print(i, self.request.query_params[i])
                 data[i] = self.request.query_params[i]
             return self.queryset.filter(**data)
         except Exception as e:
@@ -53,11 +52,10 @@ class NewsletterViewSet(ModelViewSet):
         
         if request.method == 'POST':
             ids = request.data['usuarios_ids']
-            print(ids)
             newsletters = Newsletter.objects.get(id=pk)
-            print(newsletters)
+
             for i in ids:
-                votos = newsletters.votos.add(i)
+                newsletters.votos.add(i)
 
             return Response(status=status.HTTP_200_OK)
 
@@ -67,24 +65,41 @@ class NewsletterViewSet(ModelViewSet):
             newsletters = Newsletter.objects.get(id=pk)
             votos = newsletters.votos.count()
             if votos >= newsletters.meta:
+                newsletters.publicar = True
+                newsletters.save()
                 return Response(status=status.HTTP_200_OK)
             else:
                 return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    @action(methods=['POST'], detail=True)
+    @action(methods=['POST', 'GET'], detail=True)
     def suscribirse(self, request, pk=None):
         newsletters = Newsletter.objects.get(id=pk)
-        meta = newsletters.meta.count()
-        if meta >= 5:
-            return Response(status=status.HTTP_200_OK)
+        user_id = self.request.user.id 
+
         
-        else:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
-    
+        if request.method == 'POST':
+            if newsletters.publicar:
+                newsletters.suscrito.add(user_id)
 
+                send_mail(
+                    subject = 'Hay Nuevas noticias',
+                    message = f'Tenemos nuevas noticias en {newsletters.nombre}',
+                    from_email = 'newsletters@gmail.com',
+                    recipient_list= [self.request.user.email],
+                    html_message= f'<h1> Tenemos nuevas noticas en: {newsletters.nombre}</h1>'
+                )
 
+                return Response(status=status.HTTP_200_OK)
+            
+            return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+        
+        if request.method == 'GET':
+            print(self.request.user.email)
+            return Response(status=status.HTTP_200_OK)
+
+        
     
        
         

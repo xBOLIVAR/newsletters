@@ -11,5 +11,8 @@ class Newsletter(models.Model):
     fecha = models.DateField(auto_now_add=True)
     tags = models.ManyToManyField(Tag, related_name='newsletters')
     votos = models.ManyToManyField(User, related_name='newsletters')
+    suscrito = models.ManyToManyField(User , related_name='news')
+    publicar = models.BooleanField(default=False)
+
     def __str__(self):
         return self.nombre
