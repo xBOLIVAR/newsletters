@@ -1,14 +1,13 @@
 from rest_framework.permissions import AllowAny, IsAdminUser
-from newsletters.models import Newsletter
-from usuarios.serializers import UsuarioSerializer
+from usuarios.serializers import UserSerializer
 from rest_framework.viewsets import ModelViewSet
-from usuarios.models import Usuario
+from django.contrib.auth.models import User
 
 # Create your views here.
 
 class UsuarioViewSet(ModelViewSet):  
-    queryset = Usuario.objects.all()
-    serializer_class = UsuarioSerializer
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
     permission_classes = (AllowAny,)
 
     def get_queryset(self):
